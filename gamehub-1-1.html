@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>خانه بازی‌ها 🎮</title>
+<style>
+*{box-sizing:border-box}
+html{width:100%;height:100%;min-height:100%;overflow-x:hidden;overflow-y:auto;touch-action:manipulation;scrollbar-gutter:stable}body{margin:0;width:100%;min-width:0;min-height:100%;overflow-x:hidden;overflow-y:auto;touch-action:manipulation;background:linear-gradient(135deg,#101010,#292929);color:#fff;font-family:Arial,sans-serif;text-align:center}
+.screen{width:100%;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:16px}
+.card{width:min(calc(100vw - 28px),440px);padding:28px 22px;background:#222;border-radius:25px;box-shadow:0 20px 60px #000}
+.logo{font-size:62px} h1{margin:5px 0 10px}.sub{color:#aaa;margin-bottom:22px}
+button{border:0;border-radius:13px;padding:13px;color:#fff;font-size:17px;cursor:pointer}
+button:active{transform:scale(.98)}
+.menuBtn{width:100%;margin:7px 0;background:#3498db;box-shadow:0 6px 16px #0004;transition:.18s}.menuBtn:hover{filter:brightness(1.08);transform:translateY(-1px)}.easy{background:#27ae60}.medium{background:#d49b00}.hard{background:#c0392b}.master{background:#111;border:1px solid #555}.gray{background:#555}.green{background:#27ae60}
+.hidden{display:none!important}
+#game{padding:8px;width:100%;max-width:100%;overflow-x:hidden}
+.top{width:calc(100vw - 24px);max-width:560px;margin:auto;display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.small{background:#444;padding:9px 12px;font-size:14px}
+#status{font-size:16px}#message{min-height:25px;color:#f1c40f}
+.clock{width:calc(100vw - 24px);max-width:560px;margin:8px auto;display:flex;gap:8px;direction:ltr}
+.clockBox{flex:1;background:#080808;border:2px solid #444;border-radius:10px;padding:7px;transition:.2s}
+.clockBox.activeWhite{border-color:#fff;box-shadow:0 0 12px #fff5}
+.clockBox.activeBlack{border-color:#777;box-shadow:0 0 12px #777}
+.clockLabel{color:#aaa;font-size:12px}.clockTime{font-family:monospace;font-size:25px;font-weight:bold}
+#whiteTime{color:#fff}#blackTime{color:#aaa}
+#board{width:var(--board-size, min(560px,calc(100vw - 24px)));height:var(--board-size, min(560px,calc(100vw - 24px)));max-width:none;min-width:0;min-height:0;aspect-ratio:1/1;margin:auto;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));border:5px solid #111;border-radius:8px;overflow:hidden;box-shadow:0 15px 45px #000}
+.square{position:relative;display:flex;touch-action:manipulation;-webkit-tap-highlight-color:transparent;justify-content:center;align-items:center;cursor:pointer;user-select:none}
+.light{background:#f0d9b5}.dark{background:#b58863}
+.square.selected{box-shadow:inset 0 0 0 5px #2196f3}.square.canmove:after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:#2196f3aa}.square.capture{box-shadow:inset 0 0 0 5px #e53935}
+.piece{width:86%;height:86%;display:flex;align-items:center;justify-content:center;pointer-events:none}.piece svg{width:100%;height:100%}
+#coach{width:calc(100vw - 24px);max-width:560px;margin:10px auto;padding:12px;background:#222;border-radius:13px}
+.coachTitle{font-size:18px}.coachModeLabel{font-size:12px;color:#aaa}#coachText{color:#f1c40f;margin-top:5px;line-height:1.7}
+.controls{margin:10px auto;width:calc(100vw - 24px);max-width:560px}.controls button{background:#3498db;margin:3px;padding:10px 14px}
+.timeOptions{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:15px}.timeBtn{background:#333;border:2px solid transparent}.timeBtn.active{border-color:#3498db;background:#17496b}
+.modeBtn{width:100%;margin:6px 0;background:#3498db}
+.coachStyleBtn{width:100%;margin:6px 0;background:#444}.coachStyleBtn.active{background:#17496b;border:2px solid #3498db}
+
+.hubHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.playerCode{background:#181818;border:1px solid #333;border-radius:12px;padding:8px 12px;text-align:center;margin-bottom:20px}
+.playerCode .codeLabel{color:#999;font-size:12px}
+.playerCode .codeValue{font-family:monospace;font-size:22px;letter-spacing:3px;color:#f1c40f;font-weight:bold}
+.gameGrid{display:flex;flex-direction:column;gap:10px}
+.gameCard{width:100%;text-align:right;background:#2c2c2c;border:1px solid #3a3a3a;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.15s}
+.gameCard:active{transform:scale(.98)}
+.gameCard.available{background:linear-gradient(135deg,#233,#1a2a1a);border-color:#2e5}
+.gameCard .gcIcon{font-size:30px}
+.gameCard .gcInfo{flex:1;text-align:right}
+.gameCard .gcTitle{font-size:17px;font-weight:bold}
+.gameCard .gcSub{font-size:12px;color:#999;margin-top:2px}
+.gameCard.soon{opacity:.55;cursor:default}
+.gameCard.soon .gcSub{color:#e67e22}
+.hubDuelBtn{width:100%;margin-top:6px}
+.duelOption{width:100%;text-align:right;background:#2c2c2c;border:1px solid #3a3a3a;border-radius:16px;padding:16px;margin:8px 0;cursor:pointer}
+.duelOption .doTitle{font-size:17px;font-weight:bold;display:block;margin-bottom:4px}
+.duelOption .doSub{font-size:13px;color:#999}
+.duelOption.soon{opacity:.55}
+#rulesScreen{align-items:flex-start;overflow-y:auto}
+#rulesScreen .card{width:min(calc(100vw - 28px),760px);text-align:right;padding:24px 20px;margin:8px auto}
+.rulesIntro{color:#bbb;line-height:1.9;margin-bottom:16px}
+.rulesSection{background:#181818;border:1px solid #333;border-radius:15px;padding:15px;margin:12px 0}
+.rulesSection h2{font-size:21px;margin:0 0 9px;color:#f1c40f}
+.rulesSection h3{font-size:17px;margin:13px 0 6px;color:#fff}
+.rulesSection p,.rulesSection li{font-size:15px;line-height:2;color:#ddd}
+.rulesSection ul,.rulesSection ol{padding-right:22px;margin:7px 0}
+.rulesImportant{border-right:4px solid #e74c3c}
+.rulesBack{width:100%;margin-top:8px;background:#555}
+#gameOver{display:none;position:fixed;inset:0;background:#000b;z-index:100;justify-content:center;align-items:center;padding:20px}
+.gameOverCard{width:min(92vw,400px);background:#222;border-radius:25px;padding:30px 20px;box-shadow:0 20px 60px #000}
+#winnerPiece{font-size:65px}#winnerText{font-size:26px;font-weight:bold;margin:10px 0}#reasonText{color:#aaa;margin-bottom:20px}
+.choiceNote{color:#aaa;font-size:13px;margin:10px 0}
+@media (max-width:480px){.card{padding:24px 16px}.clockTime{font-size:22px}.top{font-size:14px}.square{min-width:0;min-height:0}.piece{width:90%;height:90%}}
+
+.ticSizeBtn{font-size:16px}
+#ticBoard{display:grid;gap:6px;width:min(92vw,420px);margin:14px auto}
+.ticCell{aspect-ratio:1/1;background:#181818;border:2px solid #333;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:clamp(16px,7vw,34px);font-weight:bold;cursor:pointer;user-select:none;transition:.15s}
+.ticCell:active{transform:scale(.94)}
+.ticCell.win{background:#17496b;border-color:#3498db;box-shadow:0 0 12px #3498db88}
+#ticMessage{min-height:25px;color:#f1c40f}
+
+#board2048{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:10px;width:min(92vw,420px);aspect-ratio:1/1;margin:14px auto;background:#181818;border-radius:16px;padding:10px;box-shadow:0 15px 45px #000;touch-action:none}
+.tile2048{border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:clamp(16px,5.5vw,30px);color:#fff;animation:popIn2048 .15s ease}
+.tile2048.empty{background:#0f0f0f;box-shadow:inset 0 0 0 1px #2a2a2a;animation:none}
+@keyframes popIn2048{from{transform:scale(.55);opacity:.3}to{transform:scale(1);opacity:1}}
+.scoreBox{background:#444;padding:8px 14px;border-radius:10px;font-size:14px;text-align:center}
+.scoreBox b{display:block;font-size:18px;color:#f1c40f}
+#gameOver2048{display:none;position:fixed;inset:0;background:#000b;z-index:100;justify-content:center;align-items:center;padding:20px}
+</style>
+</head>
+<body>
+
+<div id="hub" class="screen"><div class="card">
+<div class="hubHeader"><div class="logo" style="font-size:38px">🎮</div></div>
+<h1>خانه بازی‌ها</h1><div class="sub">یه بازی رو انتخاب کن 😎</div>
+<div class="playerCode"><div class="codeLabel">کد بازیکن تو</div><div class="codeValue" id="playerCodeValue">-----</div></div>
+<div class="gameGrid">
+<div class="gameCard available" onclick="showMain()"><div class="gcIcon">♟️</div><div class="gcInfo"><div class="gcTitle">شطرنج</div><div class="gcSub">با کامپیوتر، دو نفره یا با مربی</div></div></div>
+<div class="gameCard available" onclick="showTicMenu()"><div class="gcIcon">❌⭕</div><div class="gcInfo"><div class="gcTitle">دوز</div><div class="gcSub">اندازه صفحه دلخواه، دو نفره یا با کامپیوتر</div></div></div>
+<div class="gameCard available" onclick="show2048()"><div class="gcIcon">🔢</div><div class="gcInfo"><div class="gcTitle">۲۰۴۸</div><div class="gcSub">کاشی‌ها رو ادغام کن و رکورد بزن</div></div></div>
+</div>
+<!-- دوئل آنلاین حذف شد -->
+</div></div>
+
+<!-- دوئل آنلاین حذف شد --><h1>دوئل</h1><div class="sub">می‌خوای چطوری دوئل کنی؟</div>
+<!-- دوئل آنلاین حذف شد --><span class="doSub">روی یک گوشی، نوبتی با یه نفر دیگه بازی کن</span></div>
+<!-- دوئل آنلاین حذف شد --><span class="doSub">به‌زودی — بعد از وصل شدن سرور فعال می‌شه</span></div>
+<button class="gray" onclick="showHub()">برگشت</button>
+</div></div>
+
+<div id="main" class="screen hidden"><div class="card">
+<div class="logo">♟️</div><h1>شطرنج</h1><div class="sub">ببینیم این دفعه کی می‌بره 😂🔥</div>
+<button class="menuBtn" onclick="openAI()">بازی با کامپیوتر</button>
+<button class="menuBtn" onclick="openTwo()">بازی دو نفره</button>
+<button class="menuBtn" onclick="openCoach()">مربی شطرنج</button>
+<button class="menuBtn master" onclick="openRules()">📖 آموزش و قوانین شطرنج</button>
+<button class="gray" onclick="showHub()">🏠 صفحه اصلی</button>
+</div></div>
+
+<div id="difficulty" class="screen hidden"><div class="card">
+<div class="logo">🤖</div><h1>انتخاب سختی</h1><div class="sub">این دفعه دیگه بهونه نداری 😂</div>
+<button class="menuBtn easy" onclick="selectAI(1)">آسان</button>
+<button class="menuBtn medium" onclick="selectAI(2)">متوسط</button>
+<button class="menuBtn hard" onclick="selectAI(3)">سخت</button>
+<button class="menuBtn master" onclick="selectAI(4)">استاد</button>
+<button class="gray" onclick="showMain()">برگشت</button>
+</div></div>
+
+<div id="coachMenu" class="screen hidden"><div class="card">
+<div class="logo">🧠</div><h1>مربی شطرنج</h1><div class="sub">اول مشخص کن با کی بازی می‌کنی 😂</div>
+<button class="modeBtn" onclick="selectCoachGame('two')">👥 مربی + بازی دو نفره</button>
+<button class="modeBtn" onclick="selectCoachGame('ai')">مربی + بازی با کامپیوتر</button>
+<button class="gray" onclick="showMain()">برگشت</button>
+</div></div>
+
+<div id="coachStyleMenu" class="screen hidden"><div class="card">
+<div class="logo">🧠</div><h1>سبک مربی</h1><div class="sub">بگو چطور باهات حرف بزنم 😎</div>
+<button id="funnyBtn" class="coachStyleBtn active" onclick="selectCoachStyle('funny')">طنز</button>
+<button id="seriousBtn" class="coachStyleBtn" onclick="selectCoachStyle('serious')">مربی حرفه‌ای</button>
+<button class="menuBtn green" onclick="openTimeForPending()">ادامه</button>
+<button class="gray" onclick="openCoach()">برگشت</button>
+</div></div>
+
+<div id="timeMenu" class="screen hidden"><div class="card">
+<div class="logo">⏱️</div><h1>زمان بازی</h1><div class="sub">زمان فکر کردنت رو انتخاب کن 😎</div>
+<div class="timeOptions">
+<button class="timeBtn" onclick="selectTime(1,this)">۱ دقیقه</button>
+<button class="timeBtn" onclick="selectTime(3,this)">۳ دقیقه</button>
+<button class="timeBtn active" onclick="selectTime(5,this)">۵ دقیقه</button>
+<button class="timeBtn" onclick="selectTime(10,this)">۱۰ دقیقه</button>
+<button class="timeBtn" onclick="selectTime(15,this)">۱۵ دقیقه</button>
+<button class="timeBtn" onclick="selectTime(30,this)">۳۰ دقیقه</button>
+</div>
+<div class="choiceNote">زمان انتخابی برای هر بازیکن است.</div>
+<button class="menuBtn green" onclick="startSelectedGame()">شروع بازی</button>
+<button class="gray" onclick="backFromTime()">برگشت</button>
+</div></div>
+
+<div id="rulesScreen" class="screen hidden"><div class="card">
+<div class="logo">📖</div><h1>آموزش و قوانین شطرنج</h1>
+<div class="rulesIntro">این بخش فقط متنی است و قوانین اصلی شطرنج و روش یادگیری آن را از پایه تا نکات مهم توضیح می‌دهد.</div>
+<div class="rulesSection"><h2>۱. هدف بازی</h2><p>شطرنج یک بازی دو نفره روی صفحه ۸×۸ با ۶۴ خانه است. هر بازیکن در شروع ۱۶ مهره دارد: یک شاه، یک وزیر، دو رخ، دو فیل، دو اسب و هشت پیاده. سفید همیشه اولین حرکت را انجام می‌دهد. هدف، کیش‌ومات کردن شاه حریف است.</p></div>
+<div class="rulesSection"><h2>۲. چیدمان صفحه</h2><p>برای هر بازیکن خانه گوشه سمت راست نزدیک او باید سفید باشد. در چیدمان اولیه، ردیف آخر هر طرف از چپ به راست شامل رخ، اسب، فیل، وزیر، شاه، فیل، اسب و رخ است و جلوی آن هشت پیاده قرار می‌گیرند. وزیر سفید روی d1 و وزیر سیاه روی d8 قرار دارد.</p></div>
+<div class="rulesSection"><h2>۳. حرکت مهره‌ها</h2><h3>♙ پیاده</h3><ul><li>یک خانه رو به جلو حرکت می‌کند.</li><li>در اولین حرکت می‌تواند در صورت خالی بودن مسیر دو خانه جلو برود.</li><li>مهره حریف را یک خانه مورب جلو می‌گیرد.</li><li>به عقب حرکت نمی‌کند.</li><li>با رسیدن به آخرین ردیف باید به وزیر، رخ، فیل یا اسب تبدیل شود.</li></ul><h3>♘ اسب</h3><ul><li>به شکل L حرکت می‌کند: دو خانه در یک جهت و یک خانه عمود بر آن.</li><li>تنها مهره‌ای است که می‌تواند از روی مهره‌ها بپرد.</li></ul><h3>♗ فیل</h3><ul><li>هر تعداد خانه به صورت مورب حرکت می‌کند.</li><li>از روی مهره‌ها نمی‌تواند عبور کند.</li></ul><h3>♖ رخ</h3><ul><li>هر تعداد خانه افقی یا عمودی حرکت می‌کند.</li><li>از روی مهره‌ها نمی‌تواند عبور کند.</li></ul><h3>♕ وزیر</h3><ul><li>ترکیبی از حرکت رخ و فیل را دارد؛ افقی، عمودی یا مورب.</li><li>از روی مهره‌ها نمی‌تواند عبور کند.</li></ul><h3>♔ شاه</h3><ul><li>در حالت عادی فقط یک خانه در هر جهت حرکت می‌کند.</li><li>نباید وارد خانه‌ای شود که تحت حمله حریف است.</li><li>دو شاه نمی‌توانند در خانه‌های مجاور یکدیگر باشند.</li></ul></div>
+<div class="rulesSection rulesImportant"><h2>۴. کیش و کیش‌ومات</h2><p>اگر شاه توسط مهره حریف مورد حمله باشد، در «کیش» است و بازیکن باید فوراً از کیش خارج شود. خروج از کیش می‌تواند با حرکت دادن شاه به خانه امن، گرفتن مهره مهاجم یا قرار دادن مهره بین شاه و مهاجم خطی انجام شود.</p><p>اگر شاه در کیش باشد و هیچ حرکت قانونی برای نجات آن وجود نداشته باشد، «کیش‌ومات» است و بازی پایان می‌یابد.</p></div>
+<div class="rulesSection"><h2>۵. قلعه</h2><p>قلعه حرکت ویژه شاه و رخ است. شاه دو خانه به سمت رخ می‌رود و رخ از روی شاه عبور کرده و کنار آن قرار می‌گیرد. شاه و رخ مربوطه نباید قبلاً حرکت کرده باشند، خانه‌های بینشان باید خالی باشند، شاه نباید در کیش باشد و شاه نباید از خانه تحت حمله عبور کند یا در خانه مقصد تحت حمله قرار بگیرد.</p></div>
+<div class="rulesSection"><h2>۶. آن‌پاسان</h2><p>اگر پیاده‌ای از خانه شروع خود دو خانه جلو برود و کنار پیاده حریف قرار بگیرد، پیاده حریف می‌تواند در حرکت بعدی آن را به صورت ویژه بگیرد؛ این فرصت فقط همان حرکت بعدی وجود دارد.</p></div>
+<div class="rulesSection"><h2>۷. ترفیع پیاده</h2><p>وقتی پیاده به آخرین ردیف طرف مقابل برسد، باید به وزیر، رخ، فیل یا اسب تبدیل شود. انتخاب وزیر الزامی نیست و حتی داشتن بیش از یک وزیر ممکن است.</p></div>
+<div class="rulesSection"><h2>۸. مساوی</h2><ul><li><strong>پات:</strong> نوبت بازیکنی است که کیش نیست ولی هیچ حرکت قانونی ندارد.</li><li><strong>توافق:</strong> بازیکنان می‌توانند طبق قوانین مسابقه مساوی را بپذیرند.</li><li><strong>موقعیت مرده:</strong> هیچ دنباله قانونی نمی‌تواند به کیش‌ومات منجر شود.</li><li><strong>تکرار سه‌باره و قانون ۵۰ حرکت:</strong> در شرایط مقرر امکان درخواست مساوی وجود دارد.</li><li><strong>قانون ۷۵ حرکت:</strong> در شرایط مقرر بازی به‌طور خودکار مساوی می‌شود، مگر اینکه آخرین حرکت کیش‌ومات باشد.</li></ul></div>
+<div class="rulesSection"><h2>۹. ارزش تقریبی مهره‌ها</h2><ul><li>پیاده: ۱</li><li>اسب: حدود ۳</li><li>فیل: حدود ۳</li><li>رخ: حدود ۵</li><li>وزیر: حدود ۹</li><li>شاه ارزش عددی معمول برای معامله ندارد.</li></ul><p>این اعداد قانون شطرنج نیستند و فقط برای مقایسه آموزشی استفاده می‌شوند.</p></div>
+<div class="rulesSection"><h2>۱۰. اصول شروع بازی</h2><ol><li>مرکز صفحه را کنترل کن.</li><li>اسب‌ها و فیل‌ها را توسعه بده.</li><li>شاه را تا حد امکان امن کن.</li><li>وزیر را بدون دلیل زود وارد بازی نکن.</li><li>قبل از هر حرکت بررسی کن شاهت در خطر نباشد.</li><li>تهدید حریف و پاسخ احتمالی او را بررسی کن.</li><li>مهره‌ها را بی‌دلیل در خانه‌های قابل حمله قرار نده.</li></ol></div>
+<div class="rulesSection"><h2>۱۱. روش بررسی هر حرکت</h2><ol><li>آیا شاه من در کیش است؟</li><li>آیا می‌توانم مهره‌ای بگیرم؟</li><li>حریف بعد از حرکت من چه تهدیدی دارد؟</li><li>آیا مهره‌ای که حرکت می‌دهم بعداً قابل گرفتن است؟</li><li>آیا حرکت من شاه خودم را در معرض حمله قرار می‌دهد؟</li><li>آیا حرکت من هدف مشخصی مثل توسعه، کنترل مرکز، گرفتن مهره یا ایجاد تهدید دارد؟</li></ol></div>
+<div class="rulesSection"><h2>۱۲. اصطلاحات مهم</h2><ul><li><strong>توسعه:</strong> فعال کردن مهره‌های شروع‌نشده.</li><li><strong>فورک:</strong> حمله هم‌زمان یک مهره به دو یا چند هدف.</li><li><strong>پین:</strong> مهره‌ای که به علت قرار داشتن شاه یا مهره مهم پشت آن، حرکتش محدود شده است.</li><li><strong>سیخ:</strong> حمله به مهره ارزشمندتر جلویی که با کنار رفتنش مهره پشت آن در معرض حمله قرار می‌گیرد.</li><li><strong>دابل‌چک:</strong> کیش هم‌زمان توسط دو مهره.</li></ul></div>
+<div class="rulesSection rulesImportant"><h2>۱۳. مهم‌ترین قانون عملی</h2><p>هیچ حرکت قانونی نباید شاه خودی را در کیش قرار دهد یا شاهی را که در کیش است همچنان در کیش نگه دارد. بنابراین ممکن است حرکتی برای یک مهره از نظر شکل حرکت درست باشد، اما چون شاه خودی را در خطر قرار می‌دهد، غیرقانونی باشد.</p></div>
+<div class="rulesSection"><h2>۱۴. خلاصه</h2><p>سفید شروع می‌کند و بازیکنان یکی‌درمیان حرکت می‌کنند. هدف کیش‌ومات شاه حریف است. پیاده جلو می‌رود و مورب می‌گیرد؛ اسب L شکل حرکت می‌کند و می‌پرد؛ فیل مورب، رخ افقی و عمودی، وزیر ترکیبی از رخ و فیل و شاه یک خانه حرکت می‌کند. قلعه، آن‌پاسان و ترفیع پیاده قوانین ویژه‌اند. اگر بازیکن کیش باشد و هیچ حرکت نجات‌بخشی نداشته باشد، مات است؛ اگر کیش نباشد ولی حرکت قانونی نداشته باشد، پات و مساوی است.</p></div>
+<button class="rulesBack" onclick="showMain()">بازگشت به منو</button></div></div>
+<div id="game" class="hidden">
+<div class="top"><button class="small" onclick="showMain()">منو</button><div id="status">نوبت سفید ⚪</div></div>
+<div id="message"></div>
+<div class="clock">
+<div id="whiteClock" class="clockBox"><div class="clockLabel">سفید</div><div id="whiteTime" class="clockTime">05:00</div></div>
+<div id="blackClock" class="clockBox"><div class="clockLabel">سیاه</div><div id="blackTime" class="clockTime">05:00</div></div>
+</div>
+<div id="board"></div>
+<div id="coach" class="hidden"><div class="coachTitle">مربی شطرنج</div><div id="coachStyleLabel" class="coachModeLabel"></div><div id="coachText">حواست جمع باشه داداش 😂</div></div>
+<div class="controls"><button onclick="newGame()">شروع دوباره</button><button onclick="showMain()">منو</button></div>
+</div>
+
+<div id="gameOver"><div class="gameOverCard">
+<div id="winnerPiece">🏆</div><div id="winnerText">برنده</div><div id="reasonText">بازی تمام شد</div>
+<button class="menuBtn green" onclick="restartGame()">شروع دوباره</button>
+<button class="menuBtn gray" onclick="closeGameOver();showMain()">بازگشت</button>
+</div></div>
+
+<div id="ticMenu" class="screen hidden"><div class="card">
+<div class="logo">❌⭕</div><h1>دوز</h1><div class="sub">اندازه صفحه و حریفت رو انتخاب کن 😎</div>
+<div class="timeOptions">
+<button class="timeBtn ticSizeBtn active" onclick="selectTicSize(3,this)">۳×۳</button>
+<button class="timeBtn ticSizeBtn" onclick="selectTicSize(4,this)">۴×۴</button>
+<button class="timeBtn ticSizeBtn" onclick="selectTicSize(5,this)">۵×۵</button>
+<button class="timeBtn ticSizeBtn" onclick="selectTicSize(6,this)">۶×۶</button>
+</div>
+<div class="choiceNote">برای صفحه‌های بزرگ‌تر از ۳×۳، بردن با ۴ تا پشت‌سرهم است.</div>
+<button class="modeBtn" onclick="startTic('two')">👥 دو نفره (محلی)</button>
+<button class="modeBtn" onclick="startTic('ai')">🤖 با کامپیوتر</button>
+<button class="gray" onclick="showHub()">برگشت</button>
+</div></div>
+
+<div id="ticGame" class="hidden">
+<div class="top"><button class="small" onclick="showTicMenu()">منو</button><div id="ticStatus">نوبت ❌</div></div>
+<div id="ticMessage"></div>
+<div id="ticBoard"></div>
+<div class="controls"><button onclick="newTicGame()">شروع دوباره</button><button onclick="showTicMenu()">منو</button></div>
+</div>
+
+<div id="game2048" class="hidden">
+<div class="top">
+<button class="small" onclick="showHub()">منو</button>
+<div style="display:flex;gap:8px">
+<div class="scoreBox">امتیاز<b id="score2048">0</b></div>
+<div class="scoreBox">رکورد<b id="best2048">0</b></div>
+</div>
+</div>
+<div id="board2048"></div>
+<div class="choiceNote">با کشیدن انگشت (بالا/پایین/چپ/راست) یا کلیدهای جهت‌دار حرکت کن</div>
+<div class="controls"><button onclick="new2048()">شروع دوباره</button><button onclick="showHub()">🏠 خانه</button></div>
+</div>
+
+<div id="gameOver2048"><div class="gameOverCard">
+<div style="font-size:60px">🎯</div>
+<div style="font-size:24px;font-weight:bold;margin:10px 0">بازی تمام شد!</div>
+<div id="final2048Score" style="color:#aaa;margin-bottom:20px">امتیاز نهایی: 0</div>
+<button class="menuBtn green" onclick="close2048GameOver();new2048()">شروع دوباره</button>
+<button class="menuBtn gray" onclick="close2048GameOver();showHub()">بازگشت</button>
+</div></div>
+
+<script>
+function svgPiece(type){
+ const white=type===type.toUpperCase(), fill=white?"#fff":"#050505", stroke=white?"#222":"#000", p=type.toLowerCase();
+ let shape="";
+ if(p==="p") shape=`<circle cx="50" cy="25" r="11"/><path d="M38 36 L44 58 L35 70 L65 70 L56 58 L62 36 Z"/><rect x="27" y="70" width="46" height="11" rx="3"/>`;
+ if(p==="r") shape=`<path d="M28 20h12v10h10V20h12v10h10v15H28z"/><path d="M35 45h30l-5 25H40z"/><rect x="27" y="70" width="46" height="11" rx="3"/>`;
+ if(p==="n") shape=`<path d="M30 75 C27 62 34 51 44 43 L39 27 L51 19 L61 29 L55 40 C66 46 69 58 62 69 L70 75Z"/><circle cx="51" cy="32" r="2.5" fill="${white?"#222":"#fff"}"/>`;
+ if(p==="b") shape=`<path d="M50 16 C40 27 35 35 38 45 C40 51 45 55 45 58 L36 70H64L55 58 C55 55 60 51 62 45 C65 35 60 27 50 16Z"/><path d="M42 29L58 45"/><rect x="27" y="70" width="46" height="11" rx="3"/>`;
+ if(p==="q") shape=`<path d="M23 27L33 55L40 24L50 53L60 24L67 55L77 27L67 67H33Z"/><circle cx="23" cy="24" r="5"/><circle cx="40" cy="20" r="5"/><circle cx="50" cy="24" r="5"/><circle cx="60" cy="20" r="5"/><circle cx="77" cy="24" r="5"/><rect x="27" y="67" width="46" height="14" rx="3"/>`;
+ if(p==="k") shape=`<path d="M44 12h12v12h12v11H56v12 C64 51 67 59 67 67H33 C33 59 36 51 44 47V35H32V24H44Z"/><rect x="27" y="67" width="46" height="14" rx="3"/>`;
+ return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="${fill}" stroke="${stroke}" stroke-width="2" stroke-linejoin="round">${shape}</g></svg>`;
+}
+
+const value={p:100,n:320,b:330,r:500,q:900,k:20000};
+const pieceNames = {
+ p:"پیاده", n:"اسب", b:"فیل", r:"رخ", q:"وزیر", k:"شاه"
+};
+function pieceName(p){
+ return p ? pieceNames[p.toLowerCase()] : "مهره";
+}
+function squareName(r,c){
+ const files=["a","b","c","d","e","f","g","h"];
+ return files[c]+(8-r);
+}
+function analyzeSelectedPiece(r,c){
+ if(!(mode==="coachTwo"||mode==="coachAI")) return;
+ const p=board[r][c];
+ if(!p || pieceColor(p)!==turn) return;
+
+ const moves=allMoves(turn).filter(m=>m[0]===r&&m[1]===c);
+ const name=pieceName(p);
+ const color=turn==="w"?"سفید":"سیاه";
+
+ if(!moves.length){
+   setCoach(`${name} ${color} فعلاً حرکت قانونی ندارد.`);
+   return;
+ }
+
+ let captures=0, safe=0, checks=0, bestCapture=0;
+ for(const m of moves){
+   const captured=board[m[2]][m[3]];
+   if(captured){captures++;bestCapture=Math.max(bestCapture,value[captured.toLowerCase()]);}
+   const old=board[m[2]][m[3]];
+   board[m[2]][m[3]]=p; board[r][c]="";
+   const attackedAfter=isAttacked(m[2],m[3],turn==="w"?"b":"w");
+   if(!attackedAfter) safe++;
+   const enemy=turn==="w"?"b":"w";
+   if(inCheck(enemy)) checks++;
+   board[r][c]=p; board[m[2]][m[3]]=old;
+ }
+
+ let verdict;
+ if(safe===moves.length && (captures>0 || checks>0)) verdict="استفاده از این مهره در حال حاضر می‌تواند به نفعت باشد.";
+ else if(safe>=Math.ceil(moves.length*.65)) verdict="این مهره وضعیت نسبتاً خوبی دارد؛ استفاده از آن می‌تواند مفید باشد، ولی مقصد حرکت مهم است.";
+ else if(safe>=2) verdict="این مهره قابل استفاده است، اما همه حرکت‌هایش امن نیستند؛ قبل از حرکت مقصد را بررسی کن.";
+ else verdict="این مهره در چند حرکت آسیب‌پذیر می‌شود؛ فعلاً با احتیاط از آن استفاده کن.";
+
+ const extra = captures ? ` امکان گرفتن مهره هم دارد${bestCapture>=900?"، حتی وزیر حریف را":""}.` :
+               checks ? " بعضی حرکت‌هایش می‌تواند به شاه حریف فشار بیاورد." : "";
+ setCoach(`${name} — ${verdict}${extra}`);
+}
+
+let board=[],turn="w",selected=null,mode="two",level=2,thinking=false,gameOver=false;
+let coachStyle="funny",selectedTime=5,whiteTime=300,blackTime=300,timerInterval=null;
+let pendingMode="two",pendingCoach=false,returnFromTime="main";
+
+
+let audioCtx=null;
+function initAudio(){
+  try{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==="suspended") audioCtx.resume();
+  }catch(e){}
+}
+function chessSound(kind){
+  if(kind!=="move" && kind!=="capture") return;
+  initAudio();
+  if(!audioCtx)return;
+  const now=audioCtx.currentTime;
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  const filter=audioCtx.createBiquadFilter();
+  osc.connect(filter);filter.connect(gain);gain.connect(audioCtx.destination);
+  filter.type="lowpass";
+  if(kind==="move"){
+    osc.type="sine";
+    osc.frequency.setValueAtTime(210,now);
+    osc.frequency.exponentialRampToValueAtTime(120,now+0.08);
+    gain.gain.setValueAtTime(.0001,now);
+    gain.gain.exponentialRampToValueAtTime(.12,now+.008);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+.12);
+    osc.start(now);osc.stop(now+.13);
+  }else{
+    osc.type="triangle";
+    osc.frequency.setValueAtTime(125,now);
+    osc.frequency.exponentialRampToValueAtTime(70,now+.13);
+    gain.gain.setValueAtTime(.0001,now);
+    gain.gain.exponentialRampToValueAtTime(.18,now+.008);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+.18);
+    osc.start(now);osc.stop(now+.19);
+    setTimeout(()=>{
+      try{
+        const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+        o.type="square";o.frequency.value=72;o.connect(g);g.connect(audioCtx.destination);
+        g.gain.setValueAtTime(.0001,audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(.06,audioCtx.currentTime+.006);
+        g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.09);
+        o.start();o.stop(audioCtx.currentTime+.1);
+      }catch(e){}
+    },55);
+  }
+}
+
+function initialBoard(){return[
+["r","n","b","q","k","b","n","r"],["p","p","p","p","p","p","p","p"],
+["","","","","","","",""],["","","","","","","",""],["","","","","","","",""],
+["","","","","","","",""],["P","P","P","P","P","P","P","P"],["R","N","B","Q","K","B","N","R"]
+]}
+
+function hideAll(){
+ ["hub","duelMenu","main","difficulty","coachMenu","coachStyleMenu","timeMenu","rulesScreen","game","ticMenu","ticGame","game2048"].forEach(id=>document.getElementById(id).classList.add("hidden"));
+}
+
+function getPlayerCode(){
+ let code=localStorage.getItem("playerCode");
+ if(!code){
+  code=String(Math.floor(10000+Math.random()*90000));
+  localStorage.setItem("playerCode",code);
+ }
+ return code;
+}
+function showHub(){
+ stopTimer();thinking=false;closeGameOver();hideAll();
+ document.getElementById("hub").classList.remove("hidden");
+ document.getElementById("playerCodeValue").textContent=getPlayerCode();
+}
+function openDuelMenu(){hideAll();document.getElementById("duelMenu").classList.remove("hidden")}
+function startLocalDuel(){
+ // فعلاً تنها بازی موجود شطرنجه؛ وقتی بازی‌های دیگه اضافه شدن اینجا انتخاب بازی هم اضافه می‌شه
+ openTwo();
+}
+
+function showMain(){stopTimer();thinking=false;closeGameOver();hideAll();document.getElementById("main").classList.remove("hidden")}
+function openRules(){hideAll();document.getElementById("rulesScreen").classList.remove("hidden")}
+function openAI(){hideAll();document.getElementById("difficulty").classList.remove("hidden")}
+function openTwo(){pendingMode="two";pendingCoach=false;returnFromTime="main";openTime()}
+function openCoach(){hideAll();document.getElementById("coachMenu").classList.remove("hidden")}
+function selectAI(l){level=l;pendingMode="ai";pendingCoach=false;returnFromTime="difficulty";openTime()}
+function selectCoachGame(m){pendingMode=m==="ai"?"coachAI":"coachTwo";pendingCoach=true;hideAll();document.getElementById("coachStyleMenu").classList.remove("hidden")}
+function selectCoachStyle(s){coachStyle=s;document.getElementById("funnyBtn").classList.toggle("active",s==="funny");document.getElementById("seriousBtn").classList.toggle("active",s==="serious")}
+function openCoachStyle(){hideAll();document.getElementById("coachStyleMenu").classList.remove("hidden")}
+function openTimeForPending(){returnFromTime="coachStyle";openTime()}
+function openTime(){hideAll();document.getElementById("timeMenu").classList.remove("hidden")}
+function selectTime(m,b){selectedTime=m;document.querySelectorAll(".timeBtn").forEach(x=>x.classList.remove("active"));b.classList.add("active")}
+function backFromTime(){
+ if(returnFromTime==="difficulty")openAI();
+ else if(returnFromTime==="coachStyle")openCoachStyle();
+ else showMain();
+}
+
+function startSelectedGame(){
+ mode=pendingMode;hideAll();document.getElementById("game").classList.remove("hidden");
+ document.getElementById("coach").classList.toggle("hidden",!(mode==="coachTwo"||mode==="coachAI"));
+ newGame();
+}
+function restartGame(){closeGameOver();newGame()}
+function closeGameOver(){document.getElementById("gameOver").style.display="none"}
+
+function freezeBoardSize(){
+  const boardEl=document.getElementById("board");
+  if(!boardEl)return;
+  const current=boardEl.getBoundingClientRect().width;
+  if(current>0){
+    boardEl.style.setProperty("--board-size",`${current}px`);
+    return;
+  }
+  const w=Math.min(560,Math.max(280,window.innerWidth-24));
+  boardEl.style.setProperty("--board-size",`${w}px`);
+}
+
+function newGame(){
+ stopTimer();board=initialBoard();turn="w";selected=null;thinking=false;gameOver=false;
+ whiteTime=selectedTime*60;blackTime=selectedTime*60;
+ document.getElementById("message").textContent="";
+ document.getElementById("coachText").textContent=coachStyle==="funny"?"حواست جمع باشه داداش 😂":"قبل از هر حرکت، پاسخ احتمالی حریف و خانه‌های در معرض حمله را بررسی کن.";
+ document.getElementById("coachStyleLabel").textContent=coachStyle==="funny"?"حالت طنز 😂":"حالت حرفه‌ای 🧠";
+ updateClockUI();draw();updateStatus();startTimer();
+}
+
+function formatTime(s){s=Math.max(0,s);return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+function updateClockUI(){
+ document.getElementById("whiteTime").textContent=formatTime(whiteTime);
+ document.getElementById("blackTime").textContent=formatTime(blackTime);
+ document.getElementById("whiteClock").classList.toggle("activeWhite",turn==="w"&&!gameOver);
+ document.getElementById("blackClock").classList.toggle("activeBlack",turn==="b"&&!gameOver);
+}
+function startTimer(){
+ stopTimer();timerInterval=setInterval(()=>{
+  if(gameOver)return;
+  if(turn==="w"){whiteTime--;if(whiteTime<=0){whiteTime=0;updateClockUI();timeOut("b");return}}
+  else{blackTime--;if(blackTime<=0){blackTime=0;updateClockUI();timeOut("w");return}}
+  updateClockUI();
+ },1000);
+}
+function stopTimer(){if(timerInterval!==null){clearInterval(timerInterval);timerInterval=null}}
+function timeOut(winner){if(gameOver)return;gameOver=true;thinking=false;stopTimer();showGameOver(winner,"⏱️ زمان حریف تمام شد!")}
+
+function inside(r,c){return r>=0&&r<8&&c>=0&&c<8}
+function pieceColor(p){return p?(p===p.toUpperCase()?"w":"b"):null}
+function enemy(p,col){return p&&pieceColor(p)!==col}
+
+function rawMoves(r,c){
+ const p=board[r][c];if(!p)return[];const col=pieceColor(p),type=p.toLowerCase(),moves=[];
+ const add=(nr,nc)=>{if(inside(nr,nc)&&(!board[nr][nc]||enemy(board[nr][nc],col)))moves.push([nr,nc])};
+ if(type==="p"){
+  const d=col==="w"?-1:1,start=col==="w"?6:1;
+  if(inside(r+d,c)&&!board[r+d][c]){moves.push([r+d,c]);if(r===start&&!board[r+2*d][c])moves.push([r+2*d,c])}
+  for(const dc of[-1,1]){const nr=r+d,nc=c+dc;if(inside(nr,nc)&&board[nr][nc]&&enemy(board[nr][nc],col))moves.push([nr,nc])}
+ }else if(type==="n"){
+  [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(v=>add(r+v[0],c+v[1]));
+ }else if(type==="k"){
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(dr||dc)add(r+dr,c+dc);
+ }else{
+  const dirs=[];if(type==="b"||type==="q")dirs.push([-1,-1],[-1,1],[1,-1],[1,1]);if(type==="r"||type==="q")dirs.push([-1,0],[1,0],[0,-1],[0,1]);
+  for(const d of dirs){let nr=r+d[0],nc=c+d[1];while(inside(nr,nc)){if(!board[nr][nc])moves.push([nr,nc]);else{if(enemy(board[nr][nc],col))moves.push([nr,nc]);break}nr+=d[0];nc+=d[1]}}
+ }
+ return moves;
+}
+
+function findKing(col){const k=col==="w"?"K":"k";for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(board[r][c]===k)return[r,c];return null}
+function isAttacked(r,c,by){
+ for(let rr=0;rr<8;rr++)for(let cc=0;cc<8;cc++){
+  const p=board[rr][cc];if(!p||pieceColor(p)!==by)continue;const type=p.toLowerCase(),dr=r-rr,dc=c-cc;
+  if(type==="p"){const d=by==="w"?-1:1;if(dr===d&&Math.abs(dc)===1)return true}
+  if(type==="n"&&((Math.abs(dr)===2&&Math.abs(dc)===1)||(Math.abs(dr)===1&&Math.abs(dc)===2)))return true;
+  if(type==="k"&&Math.abs(dr)<=1&&Math.abs(dc)<=1&&(dr||dc))return true;
+  if(type==="b"||type==="r"||type==="q"){
+   let ok=type==="b"?Math.abs(dr)===Math.abs(dc):type==="r"?dr===0||dc===0:dr===0||dc===0||Math.abs(dr)===Math.abs(dc);
+   if(ok){const sr=Math.sign(dr),sc=Math.sign(dc);let x=rr+sr,y=cc+sc,clear=true;while(x!==r||y!==c){if(board[x][y]){clear=false;break}x+=sr;y+=sc}if(clear)return true}
+  }
+ }
+ return false;
+}
+function inCheck(col){const k=findKing(col);return !k||isAttacked(k[0],k[1],col==="w"?"b":"w")}
+
+function legalMove(r,c,nr,nc){
+ const p=board[r][c];if(!p)return false;if(!rawMoves(r,c).some(m=>m[0]===nr&&m[1]===nc))return false;
+ const captured=board[nr][nc];board[nr][nc]=p;board[r][c]="";const safe=!inCheck(pieceColor(p));board[r][c]=p;board[nr][nc]=captured;return safe;
+}
+function allMoves(col){
+ const out=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&pieceColor(board[r][c])===col)for(const m of rawMoves(r,c))if(legalMove(r,c,m[0],m[1]))out.push([r,c,m[0],m[1]])}return out;
+}
+
+function clickSquare(r,c){ initAudio();
+ if(gameOver||thinking)return;
+ if((mode==="ai"||mode==="coachAI")&&turn!=="w")return;
+ const p=board[r][c];
+ if(selected){
+  const [sr,sc]=selected;
+  if(legalMove(sr,sc,r,c)){playMove(sr,sc,r,c);return}
+  if(p&&pieceColor(p)===turn){selected=[r,c];draw();analyzeSelectedPiece(r,c);return}
+  selected=null;draw();return;
+ }
+ if(p&&pieceColor(p)===turn){selected=[r,c];draw();analyzeSelectedPiece(r,c)}
+}
+
+function playMove(r,c,nr,nc){
+ if(gameOver)return;
+ const p=board[r][c],captured=board[nr][nc]; chessSound(captured?"capture":"move");
+ if(mode==="coachTwo" && ((turn==="w" && pieceColor(p)==="w") || turn==="b")) coachMove(r,c,nr,nc,captured);
+ board[nr][nc]=p;board[r][c]="";
+ if(p==="P"&&nr===0)board[nr][nc]="Q";if(p==="p"&&nr===7)board[nr][nc]="q";
+ turn=turn==="w"?"b":"w";selected=null;draw();updateStatus();updateClockUI();checkEnd();
+ if((mode==="ai"||mode==="coachAI")&&turn==="b"&&!gameOver)computer();
+}
+
+function computer(){
+ thinking=true;document.getElementById("message").textContent="🤖 کامپیوتر داره فکر می‌کنه...";
+ setTimeout(()=>{
+  if(gameOver){thinking=false;return}
+  const moves=allMoves("b");if(!moves.length){thinking=false;checkEnd();return}
+  let scored=moves.map(m=>{
+   const captured=board[m[2]][m[3]],p=board[m[0]][m[1]];let score=Math.random()*25;
+   if(captured)score+=value[captured.toLowerCase()]*3;
+   if(level>=3){const old=board[m[2]][m[3]];board[m[2]][m[3]]=p;board[m[0]][m[1]]="";if(inCheck("w"))score+=220;board[m[0]][m[1]]=p;board[m[2]][m[3]]=old}
+   return{m,score}
+  }).sort((a,b)=>b.score-a.score);
+  const chosen=level===1?moves[Math.floor(Math.random()*moves.length)]:scored[0].m;
+  playMove(...chosen);thinking=false;
+ },level===4?450:180);
+}
+
+function coachMove(r,c,nr,nc,captured){
+ const p=board[r][c];const old=board[nr][nc];board[nr][nc]=p;board[r][c]="";
+ const danger=isAttacked(nr,nc,"b");
+ board[r][c]=p;board[nr][nc]=old;
+ if(captured){
+  const v=value[captured.toLowerCase()];
+  if(v>=900)setCoach("اوکی، وزیرش رو گرفتی؛ حرکت خیلی خوبیه.");
+  else if(v>=500)setCoach("خوبه، یه مهره سنگین ازش کم کردی.");
+  else setCoach("خوبه؛ یه مهره از حریف گرفتی.");
+ }else if(danger){
+  setCoach(p.toLowerCase()==="q"?"حواست باشه؛ این حرکت وزیر رو در معرض حمله می‌ذاره.":"این حرکت ریسکیه؛ ممکنه حریف بتونه به این مهره حمله کنه.");
+ }else setCoach("حرکت بدی نیست؛ فقط جواب احتمالی حریف رو هم در نظر بگیر.");
+}
+
+function setCoach(text){
+ const out=coachStyle==="funny"
+   ? funnyText(text)
+   : professionalText(text);
+ document.getElementById("coachText").textContent=out;
+}
+function funnyText(text){
+  if(text.includes("حرکت قانونی ندارد") || text.includes("حرکت قانونی نداره"))
+    return "داداش این مهره فعلاً گیر کرده 😂 یه مهره دیگه رو امتحان کن.";
+  if(text.includes("استفاده از این مهره در حال حاضر می‌تواند به نفعت باشد"))
+    return "ایول 😎 این مهره الان می‌تونه حسابی به کارت بیاد؛ یه حرکت خوب براش پیدا کن.";
+  if(text.includes("وضعیت نسبتاً خوبی دارد"))
+    return "بد نیست داداش 😏 این مهره اوضاعش خوبه؛ فقط خونه مقصد رو الکی انتخاب نکن.";
+  if(text.includes("مهره قابل استفاده است") || text.includes("همه حرکت‌هایش امن نیستند"))
+    return "این یکی بدک نیست 😂 ولی هر جایی ببریش امن نیست؛ قبلش یه نگاه به حمله‌های حریف بنداز.";
+  if(text.includes("آسیب‌پذیر می‌شود"))
+    return "این مهره یه کم لق می‌زنه 😂 قبل از حرکت ببین حریف نمی‌تونه راحت جمعش کنه.";
+  if(text.includes("امکان گرفتن مهره هم دارد")){
+    if(text.includes("وزیر حریف")) return "عه! 😎 حتی وزیر حریف هم توی تیررسه؛ اینو از دست نده!";
+    return "خب خب 😏 این مهره یه چیزی هم برای گرفتن پیدا کرده؛ حواست بهش باشه.";
+  }
+  if(text.includes("بعضی حرکت‌هایش می‌تواند به شاه حریف فشار بیاورد"))
+    return "اوه 😈 این مهره می‌تونه برای شاه حریف دردسر درست کنه؛ فشار رو ادامه بده.";
+  if(text.includes("وزیرش رو گرفتی"))
+    return "وااای 😂 وزیرشو زدی! این دیگه حرکت لاکچری بود.";
+  if(text.includes("مهره سنگین"))
+    return "خوبه داداش 😎 یه مهره سنگین ازش کم کردی؛ حالا حواست باشه جواب نده.";
+  if(text.includes("یه مهره از حریف گرفتی"))
+    return "گرفتی‌ش 😎 نوش جونت! فقط ببین حریف نمی‌تونه همون مهره رو پس بگیره.";
+  if(text.includes("در معرض حمله"))
+    return "ای بابا 😂 این حرکت ممکنه مهره‌تو بندازه تو دردسر؛ حریف رو دست‌کم نگیر.";
+  if(text.includes("ریسکیه"))
+    return "آروم‌تر پهلوون 😂 این حرکت یه کم بوی دردسر می‌ده؛ یه بار دیگه جواب حریف رو چک کن.";
+  if(text.includes("حرکت بدی نیست"))
+    return "فعلاً خوبه 😎 ولی بازی هنوز تموم نشده؛ ببین حریف بعدش چی تو آستین داره.";
+  return "اوووکی 😂 ولی یه بار دیگه حرکت رو از نگاه حریف هم بررسی کن.";
+}
+
+function professionalText(text){
+ const map={
+ "این مهره فعلاً حرکت قانونی نداره.":"این مهره در حال حاضر حرکت قانونی ندارد؛ گزینه‌های دیگر را بررسی کن.",
+ "این مهره گزینه‌های خوبی داره؛ چند حرکتش می‌تونه به نفعت باشه. مقصد رو با دقت انتخاب کن.":"این مهره چند گزینه مناسب دارد؛ قبل از انتخاب مقصد، پاسخ احتمالی حریف را محاسبه کن.",
+ "حواست باشه؛ بعضی حرکت‌های این مهره می‌تونه ریسکی باشه و بعدش حریف بتونه بزنتش.":"این مهره در بعضی خانه‌ها آسیب‌پذیر است؛ قبل از حرکت، امکان حمله و گرفتن آن را بررسی کن.",
+ "این مهره فعلاً وضعیت بدی نداره؛ قبل از حرکت جواب حریف رو هم در نظر بگیر.":"وضعیت این مهره مناسب است؛ پاسخ احتمالی حریف را نیز بررسی کن."
+ };
+ return map[text]||text;
+}
+
+function updateStatus(){
+ if(gameOver)return;
+ let t=turn==="w"?"نوبت سفید ⚪":"نوبت سیاه ⚫";
+ if(mode==="ai"||mode==="coachAI")t+=turn==="w"?" — شما":" — 🤖 کامپیوتر";
+ if(inCheck(turn))t+="  ⚠️ کیش!";
+ document.getElementById("status").textContent=t;
+}
+function checkEnd(){
+ if(gameOver)return;
+ const moves=allMoves(turn);if(moves.length)return;
+ gameOver=true;stopTimer();
+ if(inCheck(turn)){const winner=turn==="w"?"b":"w";showGameOver(winner,"♟️ کیش و مات!")}
+ else showGameOver(null,"🤝 هیچ حرکت قانونی باقی نمانده.");
+}
+function showGameOver(winner,reason){
+ const piece=document.getElementById("winnerPiece"),title=document.getElementById("winnerText");
+ if(winner===null){piece.textContent="🤝";title.textContent="مساوی شد!"}
+ else{piece.textContent=winner==="w"?"⚪":"⚫";title.textContent=(winner==="w"?"سفید":"سیاه")+" برنده شد!"}
+ document.getElementById("reasonText").textContent=reason;
+ document.getElementById("gameOver").style.display="flex";
+}
+
+function draw(){
+ const el=document.getElementById("board");el.innerHTML="";
+ let moves=selected?rawMoves(...selected).filter(m=>legalMove(...selected,...m)): [];
+ for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+  const sq=document.createElement("div");sq.className="square "+((r+c)%2===0?"light":"dark");
+  if(selected&&selected[0]===r&&selected[1]===c)sq.classList.add("selected");
+  if(moves.some(m=>m[0]===r&&m[1]===c))sq.classList.add(board[r][c]?"capture":"canmove");
+  if(board[r][c]){const piece=document.createElement("div");piece.className="piece";piece.innerHTML=svgPiece(board[r][c]);sq.appendChild(piece)}
+  sq.onclick=()=>clickSquare(r,c);el.appendChild(sq);
+ }
+}
+
+/* ================= دوز (Tic-Tac-Toe) ================= */
+let ticSize=3, ticWinLen=3, ticMode="two", ticBoard=[], ticTurn="x", ticGameOver=false, ticWinCells=[];
+
+function showTicMenu(){hideAll();document.getElementById("ticMenu").classList.remove("hidden")}
+function selectTicSize(n,btn){
+ ticSize=n;
+ document.querySelectorAll(".ticSizeBtn").forEach(b=>b.classList.remove("active"));
+ btn.classList.add("active");
+}
+function startTic(mode){
+ ticMode=mode;
+ ticWinLen = ticSize===3?3:4;
+ hideAll();document.getElementById("ticGame").classList.remove("hidden");
+ newTicGame();
+}
+function newTicGame(){
+ ticBoard=Array(ticSize*ticSize).fill("");
+ ticTurn="x";ticGameOver=false;ticWinCells=[];
+ document.getElementById("ticMessage").textContent="";
+ drawTic();updateTicStatus();
+}
+function drawTic(){
+ const el=document.getElementById("ticBoard");
+ el.style.gridTemplateColumns=`repeat(${ticSize},1fr)`;
+ el.innerHTML="";
+ for(let i=0;i<ticBoard.length;i++){
+  const cell=document.createElement("div");
+  cell.className="ticCell"+(ticWinCells.includes(i)?" win":"");
+  cell.textContent=ticBoard[i]==="x"?"❌":ticBoard[i]==="o"?"⭕":"";
+  cell.onclick=()=>clickTic(i);
+  el.appendChild(cell);
+ }
+}
+function updateTicStatus(){
+ if(ticGameOver)return;
+ let t=ticTurn==="x"?"نوبت ❌":"نوبت ⭕";
+ if(ticMode==="ai"&&ticTurn==="o")t+=" — 🤖 کامپیوتر";
+ document.getElementById("ticStatus").textContent=t;
+}
+function clickTic(i){
+ if(ticGameOver||ticBoard[i])return;
+ if(ticMode==="ai"&&ticTurn==="o")return;
+ placeTic(i);
+}
+function placeTic(i){
+ ticBoard[i]=ticTurn;
+ const win=checkTicWin();
+ if(win){
+  ticGameOver=true;ticWinCells=win;drawTic();
+  document.getElementById("ticMessage").textContent=(ticTurn==="x"?"❌ برنده شد! 🎉":"⭕ برنده شد! 🎉");
+  return;
+ }
+ if(ticBoard.every(c=>c)){
+  ticGameOver=true;drawTic();
+  document.getElementById("ticMessage").textContent="🤝 مساوی شد!";
+  return;
+ }
+ ticTurn=ticTurn==="x"?"o":"x";
+ drawTic();updateTicStatus();
+ if(ticMode==="ai"&&ticTurn==="o"&&!ticGameOver){
+  document.getElementById("ticMessage").textContent="🤖 داره فکر می‌کنه...";
+  setTimeout(ticComputerMove,350);
+ }
+}
+function checkTicWin(){
+ const n=ticSize,len=ticWinLen;
+ const get=(r,c)=>(r>=0&&r<n&&c>=0&&c<n)?ticBoard[r*n+c]:null;
+ const dirs=[[0,1],[1,0],[1,1],[1,-1]];
+ for(let r=0;r<n;r++)for(let c=0;c<n;c++){
+  const p=get(r,c);if(!p)continue;
+  for(const[dr,dc]of dirs){
+   let cells=[r*n+c],ok=true;
+   for(let k=1;k<len;k++){
+    const rr=r+dr*k,cc=c+dc*k;
+    if(get(rr,cc)!==p){ok=false;break}
+    cells.push(rr*n+cc);
+   }
+   if(ok)return cells;
+  }
+ }
+ return null;
+}
+function ticComputerMove(){
+ if(ticGameOver)return;
+ const empties=ticBoard.map((v,i)=>v?null:i).filter(i=>i!==null);
+ for(const i of empties){ticBoard[i]="o";if(checkTicWin()){ticBoard[i]="";placeTic(i);return}ticBoard[i]=""}
+ for(const i of empties){ticBoard[i]="x";if(checkTicWin()){ticBoard[i]="";placeTic(i);return}ticBoard[i]=""}
+ let choice;
+ if(ticSize===3){
+  const center=4,corners=[0,2,6,8];
+  if(empties.includes(center))choice=center;
+  else{
+   const availCorners=corners.filter(c=>empties.includes(c));
+   choice=availCorners.length?availCorners[Math.floor(Math.random()*availCorners.length)]:empties[Math.floor(Math.random()*empties.length)];
+  }
+ }else{
+  choice=empties[Math.floor(Math.random()*empties.length)];
+ }
+ placeTic(choice);
+}
+
+/* ================= ۲۰۴۸ ================= */
+let grid2048=Array(16).fill(0), score2048=0, best2048=0;
+
+function show2048(){hideAll();document.getElementById("game2048").classList.remove("hidden");new2048()}
+function new2048(){
+ grid2048=Array(16).fill(0);score2048=0;
+ best2048=parseInt(localStorage.getItem("best2048")||"0");
+ addRandomTile2048();addRandomTile2048();
+ updateScore2048();draw2048();
+}
+function addRandomTile2048(){
+ const empties=grid2048.map((v,i)=>v===0?i:null).filter(i=>i!==null);
+ if(!empties.length)return;
+ const i=empties[Math.floor(Math.random()*empties.length)];
+ grid2048[i]=Math.random()<0.9?2:4;
+}
+function tileColor2048(v){
+ const colors={2:"#3a3a3a",4:"#4d4d4d",8:"#e08a3c",16:"#e0733c",32:"#e0573c",64:"#e0393c",128:"#d4c93c",256:"#d4c93c",512:"#c9d43c",1024:"#3498db",2048:"#8e44ad"};
+ return colors[v]||"#c0392b";
+}
+function draw2048(){
+ const el=document.getElementById("board2048");el.innerHTML="";
+ for(let i=0;i<16;i++){
+  const v=grid2048[i],t=document.createElement("div");
+  t.className="tile2048"+(v?"":" empty");
+  if(v){t.style.background=tileColor2048(v);t.textContent=v}
+  el.appendChild(t);
+ }
+}
+function updateScore2048(){
+ document.getElementById("score2048").textContent=score2048;
+ document.getElementById("best2048").textContent=best2048;
+}
+function slideLine2048(line){
+ let arr=line.filter(v=>v!==0),gained=0;
+ for(let i=0;i<arr.length-1;i++){
+  if(arr[i]===arr[i+1]){arr[i]*=2;gained+=arr[i];arr[i+1]=0;i++}
+ }
+ arr=arr.filter(v=>v!==0);
+ while(arr.length<4)arr.push(0);
+ return{arr,gained};
+}
+function getRow2048(r){return[grid2048[r*4],grid2048[r*4+1],grid2048[r*4+2],grid2048[r*4+3]]}
+function setRow2048(r,arr){for(let c=0;c<4;c++)grid2048[r*4+c]=arr[c]}
+function getCol2048(c){return[grid2048[c],grid2048[4+c],grid2048[8+c],grid2048[12+c]]}
+function setCol2048(c,arr){for(let r=0;r<4;r++)grid2048[r*4+c]=arr[r]}
+function move2048(dir){
+ let moved=false;
+ for(let i=0;i<4;i++){
+  let line=(dir==="left"||dir==="right")?getRow2048(i):getCol2048(i);
+  const before=line.slice();
+  if(dir==="right"||dir==="down")line=line.slice().reverse();
+  const{arr,gained}=slideLine2048(line);
+  let finalArr=(dir==="right"||dir==="down")?arr.slice().reverse():arr;
+  if(JSON.stringify(before)!==JSON.stringify(finalArr))moved=true;
+  if(dir==="left"||dir==="right")setRow2048(i,finalArr);else setCol2048(i,finalArr);
+  score2048+=gained;
+ }
+ if(moved){
+  addRandomTile2048();
+  if(score2048>best2048){best2048=score2048;localStorage.setItem("best2048",String(best2048))}
+  updateScore2048();draw2048();
+  check2048GameOver();
+ }
+}
+function check2048GameOver(){
+ if(grid2048.includes(0))return;
+ for(let r=0;r<4;r++)for(let c=0;c<4;c++){
+  const v=grid2048[r*4+c];
+  if(c<3&&grid2048[r*4+c+1]===v)return;
+  if(r<3&&grid2048[(r+1)*4+c]===v)return;
+ }
+ document.getElementById("gameOver2048").style.display="flex";
+ document.getElementById("final2048Score").textContent="امتیاز نهایی: "+score2048;
+}
+function close2048GameOver(){document.getElementById("gameOver2048").style.display="none"}
+
+document.addEventListener("keydown",e=>{
+ if(document.getElementById("game2048").classList.contains("hidden"))return;
+ const map={ArrowLeft:"left",ArrowRight:"right",ArrowUp:"up",ArrowDown:"down"};
+ if(map[e.key]){e.preventDefault();move2048(map[e.key])}
+});
+let touch2048X=0,touch2048Y=0;
+(function(){
+ const b=document.getElementById("board2048");
+ b.addEventListener("touchstart",e=>{const t=e.touches[0];touch2048X=t.clientX;touch2048Y=t.clientY},{passive:true});
+ b.addEventListener("touchend",e=>{
+  const t=e.changedTouches[0],dx=t.clientX-touch2048X,dy=t.clientY-touch2048Y;
+  if(Math.max(Math.abs(dx),Math.abs(dy))<20)return;
+  if(Math.abs(dx)>Math.abs(dy))move2048(dx>0?"right":"left");
+  else move2048(dy>0?"down":"up");
+ },{passive:true});
+})();
+
+showHub();
+</script>
+</body>
+</html>
